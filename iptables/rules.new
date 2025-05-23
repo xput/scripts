@@ -1,0 +1,28 @@
+# /etc/iptables/rules.new
+# Additional iptables rules (sourced by the main script)
+# Use the variable $IPTABLES to refer to the iptables binary
+
+# --- INPUT rules ---
+
+# Allow SSH from a specific trusted IP (replace with your IP)
+$IPTABLES -A INPUT -p tcp --dport 22 -s 203.0.113.5 -m conntrack --ctstate NEW -j LOG_ACCEPT
+
+# Allow ICMP echo requests (ping)
+$IPTABLES -A INPUT -p icmp --icmp-type echo-request -j LOG_ACCEPT
+
+# Drop invalid packets
+$IPTABLES -A INPUT -m conntrack --ctstate INVALID -j LOG_DROP
+
+# Drop fragments (can be part of some attacks)
+$IPTABLES -A INPUT -f -j LOG_DROP
+
+# Reject everything else
+$IPTABLES -A INPUT -j LOG_REJECT
+
+# --- OUTPUT rules (optional) ---
+
+# Allow DNS queries
+$IPTABLES -A OUTPUT -p udp --dport 53 -j ACCEPT
+
+# Allow HTTP/HTTPS outbound
+$IPTABLES -A OUTPUT -p tcp -m multiport --dports 80,443 -j ACCEPT
